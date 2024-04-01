@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <title>Sleepless Dreams</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap" rel="stylesheet">
+        
+        <style>
+            body{
+                background-color: rgb(102, 102, 102);
+                color: white;
+                font-family: "Major Mono Display", monospace;
+                cursor: none;
+            }
+            video{
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            #normal{
+                z-index: -10;
+            }
+            .effect{
+                z-index: -5;
+            }
+
+            .hide{
+                opacity: 0%;
+                transition: .5s ease;
+            }
+            .show{
+                opacity: 100%;
+                transition: .5s ease;
+            }
+
+            #time {
+                font-size: 20vh;
+                margin: auto;
+                width: fit-content;
+                height: 90vh;
+                display: flex;
+                align-items: center;
+                text-align: center;
+                z-index: 100;
+            }
+
+            #black {
+                background-color: black;
+                color: white;
+                z-index: 10;
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+
+            #mincount {
+                width: 100%;
+                height: 95vh;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10vh
+            }
+
+            .on{
+                opacity: 100%;
+                transition: .1s ease;
+            }
+            .off{
+                opacity: 0%;
+                transition: .1s ease;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <video src="videos/normal.mp4" id="normal" muted autoplay loop playsinline></video>
+        <!-- green -->
+        <video src="videos/0.mp4" id="effect0" class="effect hide" data-col="#b7ffad" data-blink="200" data-rate="0.25" muted autoplay loop></video>
+        <!-- yellow -->
+        <video src="videos/1.mp4" id="effect1" class="effect hide" data-col="#fff3ad" data-blink="1500" data-rate="1.75" muted autoplay loop></video>
+        <!-- blue -->
+        <video src="videos/2.mp4" id="effect2" class="effect hide" data-col="#b5e5ff" data-blink="1500" data-rate="0.25" muted autoplay loop></video>
+        <!-- red -->
+        <video src="videos/3.mp4" id="effect3" class="effect hide" data-col="#ffb5b5" data-blink="200" data-rate="1.75" muted autoplay loop></video>
+
+        <div id="black" class="hide">
+            <div id="mincount">59</div>
+        </div>
+
+        <div id="time">
+            <span id="text" class="on"></span>
+        </div>
+
+        <script>
+
+            // blinking time
+            let blinking = setInterval(blink, 500);
+
+            let text = document.getElementById("text");
+
+            function blink(){
+
+                date = new Date();
+
+                let minute = date.getMinutes();
+                if(minute < 10){
+                    minute = "0" + minute;
+                }
+
+                //fading to black
+                if(minute == "00"){
+                    text.innerText = "";
+                    document.getElementById("black").classList.remove("hide");
+                    document.getElementById("black").classList.add("show");
+                }
+                //going back to normal
+                if(minute == "01"){
+                    document.getElementById("black").classList.remove("show");
+                    document.getElementById("black").classList.add("hide");
+                }
+
+                if(minute != "00"){
+                    if(text.classList.contains("on")){
+                        text.classList.remove("on");
+                        text.classList.add("off");
+                    }else{
+                        text.classList.remove("off");
+                        text.classList.add("on");
+                    }
+                    text.innerText = minute;
+                }
+            }
+
+            //countdown blackout
+            let mincount = document.getElementById("mincount");
+
+            let mincounting = setInterval(count, 250);
+
+            function count(){
+                date = new Date();
+
+                let seconds = date.getSeconds();
+                if(seconds != 0){
+                    mincount.innerText = 60-seconds;
+                }else{
+                    mincount.innerText = "";
+                }
+            }
+
+            //half speed video
+            document.getElementById("normal").playbackRate = 0.5;
+
+            let countdown = parseInt(Math.random()*60+5);
+            let effectNow = false;
+
+            let effects = [
+                document.getElementById("effect0"),
+                document.getElementById("effect1"),
+                document.getElementById("effect2"),
+                document.getElementById("effect3")
+            ]
+
+            //setting all frame rates
+            for(let i=0; i<effects.length; i++){
+                effects[i].playbackRate = effects[i].dataset.rate;
+            }
+
+            //video changes
+            setInterval(changeVid, 1000);
+
+            function changeVid(){
+                countdown--;
+                // console.log(countdown);
+
+                //activate effect video
+                if(countdown <= 0 && !effectNow){
+                    let pick = parseInt(Math.random()*effects.length);
+                    effects[pick].classList.remove("hide");
+                    effects[pick].classList.add("show");
+                    document.body.style.color = effects[pick].dataset.col;
+                    effectNow = true;
+
+                    //restart count
+                    countdown = parseInt(Math.random()*20+5);
+                    clearInterval(blinking);
+                    blinking = setInterval(blink, effects[pick].dataset.blink);
+                }
+
+                //deactivate effect video
+                if(countdown <= 0 && effectNow){
+                    for(let i=0; i<effects.length; i++){
+                        effects[i].classList.remove("show");
+                        effects[i].classList.add("hide");
+                    }
+                    document.body.style.color = "white";
+                    effectNow = false;
+
+                    //restart count
+                    countdown = parseInt(Math.random()*60+5);
+                    clearInterval(blinking);
+                    blinking = setInterval(blink, 500);
+                }
+            }
+
+        </script>
+    </body>
+</html>
